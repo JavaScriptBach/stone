@@ -1,5 +1,6 @@
 import abc
 import six
+import json
 
 from ply import lex, yacc
 
@@ -235,3 +236,21 @@ def parse_route_attr_filter(route_attr_filter, debug=False):
     assert isinstance(route_attr_filter, six.text_type), type(route_attr_filter)
     parser = FilterExprParser(debug)
     return parser.parse(route_attr_filter)
+
+
+def parse_route_whitelist(route_file):
+    """
+    Args:
+        route_file (str): The filename consisting of the routes we want to generate.
+                          The file should consist of a single route per line, each in the
+                          format "<namespace>.<route>".
+
+    Returns:
+        Dict[str, List[str]]: Dict mapping namespace to list of routes to generate.
+    """
+    with open(route_file) as f:
+        routes = json.loads(f.read())
+    # dedupe routes just in case
+    for ns in routes:
+        routes[ns] = list(set(routes[ns]))
+    return routes
